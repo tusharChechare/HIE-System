@@ -1,0 +1,228 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+namespace org.lms.ehr
+participant Patient identified by patientId {
+  o String patientId
+  o String firstName
+  o String lastName
+  o Gender gender
+  o String dob
+  o ContactDetails contactDetails
+}
+
+participant Clinician identified by clinicianId {
+  o String clinicianId
+  o String firstName
+  o String lastName
+  o String registrationNumber
+  o String Specialisation
+  o ContactDetails contactDetails
+  --> Patient[] myPatients optional
+}
+
+participant Lab identified by labId {
+  o String labId
+  o String name
+  o ContactDetails contactDetails
+  --> Patient[] myPatients optional
+}
+
+/* Researcher */
+
+participant Researcher identified by researcherId {
+	o String researcherId
+    o String name
+    o String organization
+    o ContactDetails contactDetails
+    --> Patient[] myPatients optional
+}
+
+/* Pharmacist */
+
+participant Pharmacist identified by pharmacistId{
+	o String pharmacistId
+    o String name
+    o String licenceNo 
+    o ContactDetails contactDetails
+    --> Patient[] myPatients optional
+}
+
+/* Insurance Company */
+
+participant InsuranceCompany identified by companyId{
+	o String companyId
+	o String name
+    o String ReistrationNo
+    o ContactDetails contactDetails
+    --> Patient[] myPatients optional
+}
+enum Gender {
+  o MALE
+  o FEMALE
+  o OTHER
+}
+concept ContactDetails {
+  o String phone optional
+  o String email optional
+  o	String address
+}
+
+asset MedicalRecord identified by recordId {
+  o String recordId
+  o Boolean heartDisease  optional
+  o Boolean diabetese optional
+  o Boolean asthama optional
+  o Boolean brokenBones optional
+  o Boolean thyroidProblems optional
+  o Boolean surgicalHistory optional
+	o Boolean dustAllergy optional
+	o Boolean skinAllergy optional
+	o Boolean petAllergy optional
+	o Boolean insectStingAllergy optional
+	o Boolean peanutAllergy optional
+  o Bloodgroup bloodGroup optional
+  o String currentMedication optional
+  o String lastConsultationWith optional
+  o String lastConsultationDate optional
+  o String activeHoursInAWeek optional
+  o Boolean smoking optional
+  o Prescription[] prescriptionRec optional
+  o LabReport[] labReport optional
+  --> Patient owner
+  --> Clinician[] authorisedClinicians optional
+  --> Lab[] authorisedLabs optional
+  --> Researcher[] authorisedResearcher optional
+  --> Pharmacist[] authorisedPharmacist optional
+  --> InsuranceCompany[] authorisedInsuranceCompany optional
+}
+
+enum Bloodgroup{
+	o A_Positive optional
+	o O_Negative optional
+	o B_Positive optional
+	o AB_Posative optional
+	o A_Negative optional
+	o B_Negative optional
+	o AB_Negative optional
+}
+
+
+/* Prescription Start */
+
+concept Prescription {
+ o String prescriptionID 
+ --> Clinician clinicianID
+ o String prescriptionFile optional
+}
+concept LabReport {
+ o String labReportID 
+ --> Lab labID
+ o String labReportFile optional
+}
+
+/* Prescription End */
+
+transaction GrantAccessToClinician {
+  --> Clinician authorisedToModify
+  --> MedicalRecord medicalRecord
+}
+
+transaction revokeAccessFromClinician{
+  --> Clinician revokeThisClinician
+  --> MedicalRecord medicalRecord
+}
+
+transaction GrantAccessToLab {
+  --> Lab addThislab
+  --> MedicalRecord medicalRecord
+}
+
+transaction revokeAccessFromLab{
+  --> Lab revokeThisLab
+  --> MedicalRecord medicalRecord
+}
+transaction grantReadAccessToResearcher{
+  --> Researcher grantThisResearcher
+  --> MedicalRecord medicalRecord
+}
+transaction RevokeReadAccessFromResearcher{
+  --> Researcher revokeThisResearcher
+  --> MedicalRecord medicalRecord
+}
+
+transaction GrantReadAccessToPharmacist{
+  --> Pharmacist grantThisPharmacist
+  --> MedicalRecord medicalRecord
+}
+transaction RevokeReadAccessFromPharmacist{
+  --> Pharmacist revokeThisPharmacist
+  --> MedicalRecord medicalRecord
+}
+
+transaction GrantReadAccessToInsuranceCompany{
+  --> InsuranceCompany grantThisInsuranceCompany
+  --> MedicalRecord medicalRecord
+}
+transaction RevokeReadAccessFromInsuranceCompany{
+  --> InsuranceCompany revokeThisInsuranceCompany
+  --> MedicalRecord medicalRecord
+}
+
+transaction CreateMedicalRecord{
+  o Boolean heartDisease  optional
+  o Boolean diabetese optional
+  o Boolean asthama optional
+  o Boolean brokenBones optional
+  o Boolean thyroidProblems optional
+  o Boolean surgicalHistory optional
+  o Boolean dustAllergy optional
+	o Boolean skinAllergy optional
+	o Boolean petAllergy optional
+	o Boolean insectStingAllergy optional
+	o Boolean peanutAllergy optional
+  o Bloodgroup bloodGroup optional
+  o String currentMedication optional
+  o String lastConsultationWith optional
+  o String lastConsultationDate optional
+  o String activeHoursInAWeek optional
+  o Boolean smoking optional
+  --> Patient owner
+  --> Clinician[] authorisedClinicians optional
+  --> Lab[] authorisedLabs optional
+  --> Researcher[] authorisedResearcher optional
+  --> Pharmacist[] authorisedPharmacist optional
+  --> InsuranceCompany[] authorisedInsuranceCompany optional
+}
+
+transaction CreatePrescription{
+  
+ --> Clinician clinicianID
+ --> MedicalRecord medicalRecord
+ o String prescriptionFile optional
+
+}
+
+transaction CreateLabReport{
+
+ --> Lab labID
+ --> MedicalRecord medicalRecord
+ o String labReportFile optional
+}
+@commit(false)
+@returns(String)
+transaction getUserType {
+  o String email
+}
